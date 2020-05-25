@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Translation>
+  <TranslationVersion>0</TranslationVersion>
+  <item>
+    <key>NoEntries</key>
+    <value>No soon expiring entries exist</value>
+  </item>
+  <item>
+    <key>MenuShowSoonExpiringSingleDB</key>
+    <value>Active database</value>
+  </item>
+  <item>
+    <key>MenuShowSoonExpiringMultiDB</key>
+    <value>All open databases...</value>
+  </item>
+  <item>
+    <key>SoonExpiring</key>
+    <value>Soon expiring entries</value>
+  </item>
+  <item>
+    <key>SoonExpiringWarning</key>
+    <value>Warning (days):</value>
+  </item>
+  <item>
+    <key>UseDateOnly</key>
+    <value>Compare date only (ignore time fraction)</value>
+  </item>
+  <item>
+    <key>HideExpired</key>
+    <value>Hide expired entries, toggle with:</value>
+  </item>
+  <item>
+    <key>HideExpiredToolBar</key>
+    <value>Hide expired entries</value>
+  </item>  <item>
+    <key>HiddenExpired</key>
+    <value>Hidden expired entries: {0}</value>
+  </item>
+</Translation>

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Translation>
+  <TranslationVersion>4</TranslationVersion>
+  <item>
+    <key>NoEntries</key>
+    <value>Es existieren keine bald ablaufenden Einträge</value>
+  </item>
+  <item>
+    <key>MenuShowSoonExpiringSingleDB</key>
+    <value>Aktive Datenbank</value>
+  </item>
+  <item>
+    <key>MenuShowSoonExpiringMultiDB</key>
+    <value>Alle geöffneten Datenbanken...</value>
+  </item>
+  <item>
+    <key>SoonExpiring</key>
+    <value>Bald ablaufende Einträge</value>
+  </item>
+  <item>
+    <key>SoonExpiringWarning</key>
+    <value>Warnung (Tage):</value>
+  </item>
+  <item>
+    <key>UseDateOnly</key>
+    <value>Nur Datum vergleichen (Uhrzeit ignorieren)</value>
+  </item>
+  <item>
+    <key>HideExpired</key>
+    <value>Abgelaufene Einträge nicht anzeigen, umschalten mit: </value>
+  </item>
+  <item>
+    <key>HideExpiredToolBar</key>
+    <value>Nur aktive Einträge</value>
+  </item>
+  <item>
+    <key>HiddenExpired</key>
+    <value>Nicht angezeigte abgelaufene Einträge: {0}</value>
+  </item>
+</Translation>
