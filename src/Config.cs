@@ -23,6 +23,7 @@ namespace KPColorChange
 
 		private static string m_ConfigHideExpired = ConfigPrefix + "hideExpired";
 		private static string m_ConfigToggleKey = ConfigPrefix + "ToggleExpiredHotkey";
+		private static string m_ConfigProgressiveHidingAllowedCheck = ConfigPrefix + "ProgressiveHidingAllowedCheck";
 
 		//Timers of other plugins that will change the entry list view but do not call UpdateUI
 		//We add our eventhandler to ensure we can color entries based on their expiry 
@@ -115,6 +116,19 @@ namespace KPColorChange
 				return Keys.None;
 			}
 			set { m_conf.SetString(m_ConfigToggleKey, value.ToString()); }
+		}
+
+		internal enum HidingStatus
+		{
+			Unknown,
+			Allowed,
+			NotAllowed,
+		}
+		internal static HidingStatus ProgressiveHidingAllowed = HidingStatus.Unknown;
+		internal static bool ProgressiveHidingAllowedCheck
+		{
+			get { return m_conf.GetBool(m_ConfigProgressiveHidingAllowedCheck, true); }
+			set { m_conf.SetBool(m_ConfigProgressiveHidingAllowedCheck, value); }
 		}
 
 		internal static List<string> GetOtherTimers()

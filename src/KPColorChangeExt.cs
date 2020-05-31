@@ -36,8 +36,6 @@ namespace KPColorChange
 		private ToolStrip m_MainToolBar = null;
 		private ToolStripButton m_tsbToggle = null;
 
-		private ToolStripMenuItem m_tsmiHotkey = null;
-
 		//Timers of other plugins that will change the entry list view but do not call UpdateUI
 		//We add our eventhandler to ensure we can color entries based ln their expiry 
 		List<string> m_lTimers = new List<string>();
@@ -85,6 +83,9 @@ namespace KPColorChange
 					PluginDebug.AddError("Could not locate m_toolMain", 0);
 			}
 			if (m_tsbToggle != null) m_tsbToggle.Enabled = Config.AlreadyExpiredActive;
+
+			m_host.MainWindow.DocumentManager.ActiveDocumentSelected += HidingAllowedReset;
+			PwGroup.GroupTouched += HidingAllowedReset;
 
 			return true;
 		}
@@ -234,86 +235,93 @@ namespace KPColorChange
 
 		private void OnUIStateUpdated(object sender, EventArgs e)
 		{
-			if (!Config.AlreadyExpiredActive && !Config.SoonExpiredActive)
-				return;
-
-			if ((m_host == null) || (m_host.Database == null) || !m_host.Database.IsOpen)
+			try
 			{
-				PluginDebug.AddError("No active database or database is not opened, nothing to do", 0);
-				return;
-			}
+				if (!Config.AlreadyExpiredActive && !Config.SoonExpiredActive) return;
 
-			ListView lv = (ListView)Tools.GetControl("m_lvEntries");
-			if (lv == null)
-			{
-				PluginDebug.AddError("Could not find m_lvEntries", 0);
-				return;
-			}
-			DateTime dtSoon = DateTime.Now.AddDays(Program.Config.Application.ExpirySoonDays);
-
-			bool canHideExpired = true;
-			int hidden = 0;
-			PwGroup recycle = null;
-			if (Config.HideExpired && Config.AlreadyExpiredActive)
-			{
-				canHideExpired = CallstackAllowsHiding(sender);
-				recycle = m_host.Database.RecycleBinEnabled ? m_host.Database.RootGroup.FindGroup(m_host.Database.RecycleBinUuid, true) : null;
-			}
-			else
-				PluginDebug.AddInfo("Hiding of expired entries", 2, "Active: " + Config.HideExpired.ToString());
-
-			if (!canHideExpired && !Config.AlreadyExpiredActive && !Config.SoonExpiredActive)
-				return;
-
-			lv.BeginUpdate();
-
-			//don't use foreach and change the number of items... (thanks to darkdragon)
-			//foreach (ListViewItem lvi in lv.Items)
-			for (int i = lv.Items.Count - 1; i >= 0; i--)
-			{
-				ListViewItem lvi = lv.Items[i];
-				PwListItem li = (lvi.Tag as PwListItem);
-				if (li == null) continue;
-
-				if (li.Entry == null)
+				if ((m_host == null) || (m_host.Database == null) || !m_host.Database.IsOpen)
 				{
-					PluginDebug.AddError("List entry does not contain valid PwEntry", 0, lvi.Text);
-					continue; //should never happen but on the other side... you never know
+					PluginDebug.AddInfo("No active database or database is not opened, nothing to do", 0);
+					return;
 				}
-				ExpiryStatus expiry = EntryExpiry(li.Entry, dtSoon);
-				if ((expiry == ExpiryStatus.Expired) && Config.AlreadyExpiredActive)
+
+				ListView lv = (ListView)Tools.GetControl("m_lvEntries");
+				if (lv == null)
 				{
-					if (Config.HideExpired && canHideExpired)
+					PluginDebug.AddError("Could not find m_lvEntries", 0);
+					return;
+				}
+				DateTime dtSoon = DateTime.Now.AddDays(Program.Config.Application.ExpirySoonDays);
+
+				bool canHideExpired = true;
+				int hidden = 0;
+				PwGroup recycle = null;
+				if (Config.HideExpired && Config.AlreadyExpiredActive)
+				{
+					canHideExpired = HidingAllowed(sender);
+					recycle = m_host.Database.RecycleBinEnabled ? m_host.Database.RootGroup.FindGroup(m_host.Database.RecycleBinUuid, true) : null;
+				}
+				else PluginDebug.AddInfo("Hiding of expired entries", 0, "Active: " + false.ToString());
+
+				if (!canHideExpired && !Config.AlreadyExpiredActive && !Config.SoonExpiredActive) return;
+
+				lv.BeginUpdate();
+
+				//don't use foreach and change the number of items... (thanks to darkdragon)
+				//foreach (ListViewItem lvi in lv.Items)
+				for (int i = lv.Items.Count - 1; i >= 0; i--)
+				{
+					ListViewItem lvi = lv.Items[i];
+					PwListItem li = (lvi.Tag as PwListItem);
+					if (li == null) continue;
+
+					if (li.Entry == null)
 					{
-						if (!li.Entry.IsContainedIn(recycle))
+						PluginDebug.AddError("List entry does not contain valid PwEntry", 0, lvi.Text);
+						continue; //should never happen but on the other side... you never know
+					}
+					ExpiryStatus expiry = EntryExpiry(li.Entry, dtSoon);
+					if ((expiry == ExpiryStatus.Expired) && Config.AlreadyExpiredActive)
+					{
+						if (Config.HideExpired && canHideExpired)
 						{
-							lv.Items.RemoveAt(i);
-							hidden++;
-							PluginDebug.AddInfo("Hidden entry: " + li.Entry.Uuid.ToHexString(), 0, "Removed from list");
+							if (!li.Entry.IsContainedIn(recycle))
+							{
+								lv.Items.RemoveAt(i);
+								hidden++;
+								PluginDebug.AddInfo("Hidden entry: " + li.Entry.Uuid.ToHexString(), 0, "Removed from list");
+							}
+							else PluginDebug.AddInfo("Hidden entry: " + li.Entry.Uuid.ToHexString(), 0, "Not removed from list, contained in recycle bin");
 						}
-						else PluginDebug.AddInfo("Hidden entry: " + li.Entry.Uuid.ToHexString(), 0, "Not removed from list, contained in recycle bin");
+						else
+						{
+							lvi.ImageIndex = Config.AlreadyExpiredIcon;
+							lvi.BackColor = Config.AlreadyExpiredColor;
+						}
 					}
-					else
+					else if (Config.SoonExpiredActive && (expiry == ExpiryStatus.ExpiringSoon))
 					{
-						lvi.ImageIndex = Config.AlreadyExpiredIcon;
-						lvi.BackColor = Config.AlreadyExpiredColor;
+						lvi.ImageIndex = Config.SoonExpiredIcon;
+						lvi.BackColor = Config.SoonExpiredColor;
 					}
 				}
-				else if (Config.SoonExpiredActive && (expiry == ExpiryStatus.ExpiringSoon))
+				if (hidden > 0)
 				{
-					lvi.ImageIndex = Config.SoonExpiredIcon;
-					lvi.BackColor = Config.SoonExpiredColor;
+					UIUtil.SetAlternatingBgColors(lv, UIUtil.GetAlternateColor(lv.BackColor), Program.Config.MainWindow.EntryListAlternatingBgColors);
+					m_host.MainWindow.SetStatusEx(string.Format(PluginTranslate.HiddenExpired, hidden));
 				}
+				lv.EndUpdate();
 			}
-			if (hidden > 0)
+			catch (Exception ex)
 			{
-				UIUtil.SetAlternatingBgColors(lv, UIUtil.GetAlternateColor(lv.BackColor), Program.Config.MainWindow.EntryListAlternatingBgColors);
-				m_host.MainWindow.SetStatusEx(string.Format(PluginTranslate.HiddenExpired, hidden));
+				bool bDM = PluginDebug.DebugMode;
+				PluginDebug.DebugMode = true;
+				PluginDebug.AddError("Exception during OnUIStateUpdate", -1, ex.Message, ex.Source, ex.StackTrace);
+				PluginDebug.DebugMode = bDM;
 			}
-			lv.EndUpdate();
 		}
 
-		private bool CallstackAllowsHiding(object sender)
+		private bool HidingAllowed(object sender)
 		{
 			System.Diagnostics.StackTrace callStack = new System.Diagnostics.StackTrace();
 			bool HidingAllowed = true;
@@ -333,7 +341,8 @@ namespace KPColorChange
 				{
 					string methodname = callStack.GetFrame(i).GetMethod().Name;
 					HidingAllowed &= methodname != "ShowExpiredEntries";
-					HidingAllowed &= !methodname.StartsWith("OnPwList");
+					if (!Config.ProgressiveHidingAllowedCheck) HidingAllowed &= !methodname.StartsWith("OnPwList");
+					HidingAllowed &= !methodname.StartsWith("OnFind");
 					HidingAllowed &= methodname != "PerformQuickFind";
 					HidingAllowed &= methodname != "OpenDatabase";
 					HidingAllowed &= methodname != "OnFileLock";
@@ -353,11 +362,39 @@ namespace KPColorChange
 					}
 				}
 			}
-			if (HidingAllowed)
-				PluginDebug.AddInfo("Hiding of expired entries", 0, "Active: " + Config.HideExpired.ToString(), "Possible: " + HidingAllowed.ToString());
-			else
-				PluginDebug.AddInfo("Hiding of expired entries", 0, "Active: " + Config.HideExpired.ToString(), "Possible: " + HidingAllowed.ToString(), "Reason: Found method " + m);
+			List<string> lMsg = new List<string>();
+			lMsg.Add("Active:" + Config.HideExpired.ToString());
+			lMsg.Add("Progressive hiding check:" + Config.ProgressiveHidingAllowedCheck.ToString());
+
+			//Progressive = Remember setting
+			//Reset only if current callstack does not allow hiding expired entries
+			if (Config.ProgressiveHidingAllowedCheck)
+			{
+				if (!HidingAllowed) Config.ProgressiveHidingAllowed = Config.HidingStatus.NotAllowed;
+				//Set hiding status if not yet defined
+				if (Config.ProgressiveHidingAllowed == Config.HidingStatus.Unknown)
+				{
+					if (HidingAllowed) Config.ProgressiveHidingAllowed = Config.HidingStatus.Allowed;
+					else
+					{
+						Config.ProgressiveHidingAllowed = Config.HidingStatus.NotAllowed;
+						lMsg.Add("Found method: " + m);
+					}
+				}
+				lMsg.Add("Hiding possible: " + (Config.ProgressiveHidingAllowed == Config.HidingStatus.Allowed).ToString() + " - " + HidingAllowed.ToString());
+				PluginDebug.AddInfo("Hiding of expired entries", 0, lMsg.ToArray());
+				return Config.ProgressiveHidingAllowed == Config.HidingStatus.Allowed;
+			}
+			if (!HidingAllowed) lMsg.Add("Found method: " + m);
+			lMsg.Add("Hiding possible:" + HidingAllowed.ToString());
+			PluginDebug.AddInfo("Hiding of expired entries", 0, lMsg.ToArray());
 			return HidingAllowed;
+		}
+
+		//Reset hiding allowed status if another document is selected or if another group is selected
+		private void HidingAllowedReset(object sender, EventArgs e)
+		{
+			Config.ProgressiveHidingAllowed = Config.HidingStatus.Unknown;
 		}
 
 		private ExpiryStatus EntryExpiry(PwEntry entry, DateTime dtSoon)
@@ -551,6 +588,8 @@ namespace KPColorChange
 		{
 			if (m_host == null)
 				return;
+			m_host.MainWindow.DocumentManager.ActiveDocumentSelected -= HidingAllowedReset;
+			PwGroup.GroupTouched -= HidingAllowedReset;
 			m_host.MainWindow.KeyDown -= ToggleHideExpiredKey;
 			if (m_MainToolBar != null)
 			{
