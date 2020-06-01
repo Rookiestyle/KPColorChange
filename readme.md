@@ -1,7 +1,6 @@
-# KPColorChange
 [![Version](https://img.shields.io/github/release/rookiestyle/kpcolorchange)](https://github.com/rookiestyle/kpcolorchange/releases/latest)
 [![Releasedate](https://img.shields.io/github/release-date/rookiestyle/kpcolorchange)](https://github.com/rookiestyle/kpcolorchange/releases/latest)
-[![Downloads](https://img.shields.io/github/downloads/rookiestyle/kpcolorchange/total?color=%2300cc00)](https://github.com/rookiestyle/kpcolorchange/releases/latest)\
+[![Downloads](https://img.shields.io/github/downloads/rookiestyle/kpcolorchange/total?color=%2300cc00)](https://github.com/rookiestyle/kpcolorchange/releases/latest/download/KPColorChange.plgx)\
 [![License: GPL v3](https://img.shields.io/github/license/rookiestyle/kpcolorchange)](https://www.gnu.org/licenses/gpl-3.0)
 
 KPColorChange visually indicates whether an entry is expired or will expire soon by showing specific icons and background colors in the entry view.
@@ -16,7 +15,7 @@ In this case the statusbar will inform you how many entries are not shown becaus
 # Table of Contents
 - [Configuration](#configuration)
 - [Translations](#translations)
-- [Requirements](#requirements)
+- [Download and Requirements](#download-and-requirements)
 
 # Configuration
 KPColorChange integrates into KeePass' options form.\
@@ -47,5 +46,12 @@ Example: `KPColorChange.de.language.xml`
 The language identifier in the filename must match the language identifier inside the KeePass language that you can select using *View -> Change language...*\
 If [EarlyUpdateCheck](https://github.com/rookiestyle/earlyupdatecheck) is installed, this identifier is shown there as well.
 
-# Requirements
+# Download and Requirements
+## Download
+Please follow these links to download the plugin file itself.
+- [Download newest release](https://github.com/rookiestyle/kpcolorchange/releases/latest/download/KPColorChange.plgx)
+- [Download history](https://github.com/rookiestyle/kpcolorchange/releases)
+
+If you're interested in any of the available translations in addition, please download them from the [Translations](Translations) folder.
+## Requirements
 * KeePass: 2.41
