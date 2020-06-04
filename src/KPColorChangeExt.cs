@@ -344,8 +344,8 @@ namespace KPColorChange
 					if (!Config.ProgressiveHidingAllowedCheck) HidingAllowed &= !methodname.StartsWith("OnPwList");
 					HidingAllowed &= !methodname.StartsWith("OnFind");
 					HidingAllowed &= methodname != "PerformQuickFind";
-					HidingAllowed &= methodname != "OpenDatabase";
-					HidingAllowed &= methodname != "OnFileLock";
+					//HidingAllowed &= methodname != "OpenDatabase";
+					//HidingAllowed &= methodname != "OnFileLock";
 					if ((methodname == "UpdateUIState") && (i < callStack.FrameCount - 1))
 					{
 						methodname = callStack.GetFrame(i + 1).GetMethod().Name;
