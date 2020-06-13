@@ -138,6 +138,9 @@ namespace KPColorChange
 			//Quick & Dirty fix as I changed the class holding the timer in my KeePassOTP plugin
 			if (hookPluginTimers.Contains("KeePass") && !hookPluginTimers.Contains("KeePassOTP.m_columnOTP.m_columnRefreshTimer"))
 				hookPluginTimers += ",KeePassOTP.m_columnOTP.m_columnRefreshTimer";
+			//Quick & Dirty fix as KeeTrayTotp renamed the privat member I changed the class holding the timer in my KeePassOTP plugin
+			if (hookPluginTimers.Contains("KeeTrayTOTP") && !hookPluginTimers.Contains("KeeTrayTOTP._liRefreshTimer"))
+				hookPluginTimers += ",KeeTrayTOTP._liRefreshTimer";
 			m_conf.SetString(m_ConfigOtherTimers, hookPluginTimers);
 			string[] sTimers = hookPluginTimers.Split(',');
 			for (int i = 0; i < sTimers.Length; i++)
