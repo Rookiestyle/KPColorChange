@@ -97,7 +97,7 @@ namespace KPColorChange
 		private void updateIcon(Button myButton, int iconId)
 		{
 			if (myButton == null) return;
-			UIUtil.SetButtonImage(myButton, DPIAwareness.Scale16x16(host.MainWindow.ClientIcons.Images[iconId]), true);
+			UIUtil.SetButtonImage(myButton, KeePassLib.Utility.GfxUtil.ScaleImage(host.MainWindow.ClientIcons.Images[iconId], DpiUtil.ScaleIntX(16), DpiUtil.ScaleIntY(16)), true);
 			if (myButton.Name == bExpired.Name)
 				m_expiredIcon = iconId;
 			else if (myButton.Name == bExpiring.Name)

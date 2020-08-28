@@ -121,6 +121,17 @@ namespace KPColorChange
 		{
 			object p = Tools.GetPluginInstance(sPluginName);
 			bool bPlugin = p != null;
+			if (bPlugin && sPluginName.ToLowerInvariant() == "keepassotp") //KeePassOTP >= 0.13 does not require special handling
+			{
+				try
+				{
+					Version vCur = p.GetType().Assembly.GetName().Version;
+					vCur = new Version(vCur.Major, vCur.Minor, vCur.Build, 0); // ignore preReleases
+					Version vMin = new Version(0, 13, 0, 0);
+					if (vCur >= vMin) return;
+				}
+				catch { }
+			}
 			object o = null;
 			List<string> fields = new List<string>(sTimerName.Split('.'));
 			for (int i = 0; i < fields.Count - 1; i++)
@@ -297,12 +308,20 @@ namespace KPColorChange
 						{
 							lvi.ImageIndex = Config.AlreadyExpiredIcon;
 							lvi.BackColor = Config.AlreadyExpiredColor;
+							if (!lvi.UseItemStyleForSubItems)
+							{
+								for (int j = 0; j < lvi.SubItems.Count; j++) lvi.SubItems[i].BackColor = lvi.BackColor;
+							}
 						}
 					}
 					else if (Config.SoonExpiredActive && (expiry == ExpiryStatus.ExpiringSoon))
 					{
 						lvi.ImageIndex = Config.SoonExpiredIcon;
 						lvi.BackColor = Config.SoonExpiredColor;
+						if (!lvi.UseItemStyleForSubItems)
+						{
+							for (int j = 0; j < lvi.SubItems.Count; j++) lvi.SubItems[i].BackColor = lvi.BackColor;
+						}
 					}
 				}
 				if (hidden > 0)
@@ -370,7 +389,12 @@ namespace KPColorChange
 			//Reset only if current callstack does not allow hiding expired entries
 			if (Config.ProgressiveHidingAllowedCheck)
 			{
-				if (!HidingAllowed) Config.ProgressiveHidingAllowed = Config.HidingStatus.NotAllowed;
+				if (!HidingAllowed)
+				{
+					Config.ProgressiveHidingAllowed = Config.HidingStatus.NotAllowed;
+					if (!string.IsNullOrEmpty(m)) lMsg.Add("Found method: " + m);
+					else lMsg.Add("Reuse previous check result: " + true.ToString());
+				}
 				//Set hiding status if not yet defined
 				if (Config.ProgressiveHidingAllowed == Config.HidingStatus.Unknown)
 				{
@@ -429,17 +453,14 @@ namespace KPColorChange
 
 		class DBExpiringEntries
 		{
-			public PwDatabase db;
-			public PwGroup pg;
-			public DBExpiringEntries()
-			{
-				db = null;
-				pg = null;
-			}
+			public readonly PwDatabase db;
+			public readonly PwGroup pg;
+			public readonly uint EntryCount;
 			public DBExpiringEntries(PwDatabase db, PwGroup pg)
 			{
 				this.db = db;
 				this.pg = pg;
+				EntryCount = pg != null ? pg.GetEntriesCount(true) : 0;
 			}
 		}
 		private void ShowExpiringEntriesMultiDB()
@@ -450,7 +471,7 @@ namespace KPColorChange
 			List<DBExpiringEntries> lExpiring = new List<DBExpiringEntries>();
 			foreach (PwDatabase db in m_host.MainWindow.DocumentManager.GetOpenDatabases())
 				lExpiring.Add(new DBExpiringEntries(db, GetExpiringEntries(db, dtSoon)));
-			if (lExpiring.Count == 0)
+			if (lExpiring.Find(x => x.EntryCount > 0) == null)
 			{
 				Tools.ShowInfo(PluginTranslate.NoEntries);
 				return;
@@ -529,7 +550,7 @@ namespace KPColorChange
 			pg.IsVirtual = true;
 			if (db == null) return pg;
 			if (!db.IsOpen) return pg;
-			PwGroup recycle = db.RootGroup.FindGroup(db.RecycleBinUuid, true);
+			PwGroup recycle = db.RecycleBinEnabled ? db.RootGroup.FindGroup(db.RecycleBinUuid, true) : null;
 			EntryHandler eh = delegate (PwEntry pe)
 			{
 				if ((recycle != null) && pe.IsContainedIn(recycle))
