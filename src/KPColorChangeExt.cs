@@ -358,11 +358,17 @@ namespace KPColorChange
 			{
 				for (int i = 0; i < callStack.FrameCount; i++)
 				{
-					string methodname = callStack.GetFrame(i).GetMethod().Name;
+					System.Reflection.MethodBase mbMethod = callStack.GetFrame(i).GetMethod();
+					string methodname = mbMethod.Name;
 					HidingAllowed &= methodname != "ShowExpiredEntries";
 					if (!Config.ProgressiveHidingAllowedCheck) HidingAllowed &= !methodname.StartsWith("OnPwList");
 					HidingAllowed &= !methodname.StartsWith("OnFind");
 					HidingAllowed &= methodname != "PerformQuickFind";
+					if ((mbMethod.DeclaringType.FullName == "GlobalSearch.GlobalSearchExt") && methodname.StartsWith("OnClickFindEntry"))
+					{
+						HidingAllowed = false;
+						methodname = mbMethod.DeclaringType.Namespace + "-" + methodname;
+					}
 					//HidingAllowed &= methodname != "OpenDatabase";
 					//HidingAllowed &= methodname != "OnFileLock";
 					if ((methodname == "UpdateUIState") && (i < callStack.FrameCount - 1))
@@ -648,5 +654,7 @@ namespace KPColorChange
 				return GfxUtil.ScaleImage(Resources.colorchange, 16, 16);
 			}
 		}
+
+		public object MethodBase { get; private set; }
 	}
 }
