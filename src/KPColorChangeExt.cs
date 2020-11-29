@@ -72,7 +72,7 @@ namespace KPColorChange
 					m_tsbToggle.Name = "m_tbToggleExpired";
 					m_tsbToggle.ToolTipText = PluginTranslate.HideExpiredToolBar;
 					m_tsbToggle.Image = SmallIcon;
-					m_tsbToggle.Click += (o, e) => ToggleHideExpired(null, null);
+					m_tsbToggle.Click += ToggleHideExpired;
 					m_tsbToggle.CheckState = Config.HideExpired ? CheckState.Checked : CheckState.Unchecked;
 					m_tsbToggle.Checked = Config.HideExpired;
 
@@ -239,8 +239,15 @@ namespace KPColorChange
 			Config.HideExpired = !Config.HideExpired;
 			if (m_tsbToggle != null)
 				m_tsbToggle.Checked = Config.HideExpired;
-
-			PluginDebug.AddInfo("Display of expired entries: " + (Config.HideExpired ? "Hide" : "Show"), 0);
+			List<string> lMsg = new List<string>();
+			lMsg.Add("Display of expired entries: " + (Config.HideExpired ? "Hide" : "Show"));
+			lMsg.Add("ProgressiveHidingAllowed: " + Config.ProgressiveHidingAllowed.ToString());
+			if (Config.HideExpired && Config.ProgressiveHidingAllowed == Config.HidingStatus.NotAllowed)
+			{
+				Config.ProgressiveHidingAllowed = Config.HidingStatus.Unknown;
+				lMsg.Add("ProgressiveHidingAllowed sanitized: " + Config.ProgressiveHidingAllowed.ToString());
+			}
+			PluginDebug.AddInfo("Toggle hide expired", 0, lMsg.ToArray());
 			m_host.MainWindow.UpdateUI(false, null, false, null, true, null, false);
 		}
 
@@ -618,10 +625,9 @@ namespace KPColorChange
 			m_host.MainWindow.DocumentManager.ActiveDocumentSelected -= HidingAllowedReset;
 			PwGroup.GroupTouched -= HidingAllowedReset;
 			m_host.MainWindow.KeyDown -= ToggleHideExpiredKey;
-			if (m_MainToolBar != null)
+			if ((m_MainToolBar != null) && (m_tsbToggle != null))
 			{
-				int i = m_MainToolBar.Items.IndexOf(m_tsbToggle);
-				if (i >= 0) m_MainToolBar.Items.RemoveAt(i - 1);
+				m_tsbToggle.Click -= ToggleHideExpired;
 				m_MainToolBar.Items.Remove(m_tsbToggle);
 			}
 			m_host.MainWindow.UIStateUpdated -= OnUIStateUpdated;
