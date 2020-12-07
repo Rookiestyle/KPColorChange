@@ -370,21 +370,36 @@ namespace KPColorChange
 					HidingAllowed &= methodname != "ShowExpiredEntries";
 					if (!Config.ProgressiveHidingAllowedCheck) HidingAllowed &= !methodname.StartsWith("OnPwList");
 					HidingAllowed &= !methodname.StartsWith("OnFind");
-					HidingAllowed &= methodname != "PerformQuickFind";
+					HidingAllowed &= methodname != "PerformQuickFind"; //KeePass <= 2.46
+					HidingAllowed &= !methodname.StartsWith("PerformSearch"); //KeePass >= 2.47
+					HidingAllowed &= methodname != "ShowSearchResults"; //KeePass >= 2.47
 					if ((mbMethod.DeclaringType.FullName == "GlobalSearch.GlobalSearchExt") && methodname.StartsWith("OnClickFindEntry"))
+					{
+						HidingAllowed = false;
+						methodname = mbMethod.DeclaringType.Namespace + "-" + methodname;
+					}
+					if ((mbMethod.Name == "RefreshEntriesList") && (mbMethod.DeclaringType.FullName == "PluginTools.Tools") && Tools.PreserveEntriesShown)
 					{
 						HidingAllowed = false;
 						methodname = mbMethod.DeclaringType.Namespace + "-" + methodname;
 					}
 					//HidingAllowed &= methodname != "OpenDatabase";
 					//HidingAllowed &= methodname != "OnFileLock";
-					if ((methodname == "UpdateUIState") && (i < callStack.FrameCount - 1))
+					if (methodname == "UpdateUIState")
 					{
-						methodname = callStack.GetFrame(i + 1).GetMethod().Name;
-						if (methodname == "WndProc")
+						if ((mbMethod.DeclaringType.FullName == "PluginTools.Tools") && Program.Config.CustomConfig.GetBool("Rookiestyle.PreserveEntriesShown", true))
 						{
 							HidingAllowed = false;
-							methodname = "WndProc - message: m_nTaskbarButtonMessage";
+							methodname = mbMethod.DeclaringType.Namespace + "-" + methodname;
+						}
+						else if (i < callStack.FrameCount - 1)
+						{
+							methodname = callStack.GetFrame(i + 1).GetMethod().Name;
+							if (methodname == "WndProc")
+							{
+								HidingAllowed = false;
+								methodname = "WndProc - message: m_nTaskbarButtonMessage";
+							}
 						}
 					}
 					if (!HidingAllowed)
@@ -431,6 +446,17 @@ namespace KPColorChange
 		//Reset hiding allowed status if another document is selected or if another group is selected
 		private void HidingAllowedReset(object sender, EventArgs e)
 		{
+			var sfArray = new System.Diagnostics.StackTrace().GetFrames();
+			foreach (var sf in sfArray)
+			{
+				var m = sf.GetMethod();
+				if (m == null) continue;
+				if (m.DeclaringType.FullName == "KeePassLib.PwEntry" && m.Name == "Touch")
+				{
+					PluginDebug.AddInfo("Reset HidingAllowed: No", 0, "PwEntry.Touch found in callstack");
+					return;
+				}
+			}
 			Config.ProgressiveHidingAllowed = Config.HidingStatus.Unknown;
 		}
 
