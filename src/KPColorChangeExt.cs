@@ -253,44 +253,52 @@ namespace KPColorChange
 
 		private void OnUIStateUpdated(object sender, EventArgs e)
 		{
+			if (!Config.AlreadyExpiredActive && !Config.SoonExpiredActive) return;
+
+			if ((m_host == null) || (m_host.Database == null) || !m_host.Database.IsOpen)
+			{
+				PluginDebug.AddInfo("No active database or database is not opened, nothing to do", 0);
+				return;
+			}
+
+			ListView lv = (ListView)Tools.GetControl("m_lvEntries");
+			if (lv == null)
+			{
+				PluginDebug.AddError("Could not find m_lvEntries", 0);
+				return;
+			}
+			DateTime dtSoon = DateTime.Now.AddDays(Program.Config.Application.ExpirySoonDays);
+
+			bool canHideExpired = true;
+			int hidden = 0;
+			PwGroup recycle = null;
+			if (Config.HideExpired && Config.AlreadyExpiredActive)
+			{
+				canHideExpired = HidingAllowed(sender);
+				recycle = m_host.Database.RecycleBinEnabled ? m_host.Database.RootGroup.FindGroup(m_host.Database.RecycleBinUuid, true) : null;
+			}
+			else PluginDebug.AddInfo("Hiding of expired entries", 0, "Active: " + false.ToString());
+
+			if (!canHideExpired && !Config.AlreadyExpiredActive && !Config.SoonExpiredActive) return;
+
 			try
 			{
-				if (!Config.AlreadyExpiredActive && !Config.SoonExpiredActive) return;
-
-				if ((m_host == null) || (m_host.Database == null) || !m_host.Database.IsOpen)
-				{
-					PluginDebug.AddInfo("No active database or database is not opened, nothing to do", 0);
-					return;
-				}
-
-				ListView lv = (ListView)Tools.GetControl("m_lvEntries");
-				if (lv == null)
-				{
-					PluginDebug.AddError("Could not find m_lvEntries", 0);
-					return;
-				}
-				DateTime dtSoon = DateTime.Now.AddDays(Program.Config.Application.ExpirySoonDays);
-
-				bool canHideExpired = true;
-				int hidden = 0;
-				PwGroup recycle = null;
-				if (Config.HideExpired && Config.AlreadyExpiredActive)
-				{
-					canHideExpired = HidingAllowed(sender);
-					recycle = m_host.Database.RecycleBinEnabled ? m_host.Database.RootGroup.FindGroup(m_host.Database.RecycleBinUuid, true) : null;
-				}
-				else PluginDebug.AddInfo("Hiding of expired entries", 0, "Active: " + false.ToString());
-
-				if (!canHideExpired && !Config.AlreadyExpiredActive && !Config.SoonExpiredActive) return;
-
 				lv.BeginUpdate();
 
 				//don't use foreach and change the number of items... (thanks to darkdragon)
 				//foreach (ListViewItem lvi in lv.Items)
 				for (int i = lv.Items.Count - 1; i >= 0; i--)
 				{
-					ListViewItem lvi = lv.Items[i];
-					PwListItem li = (lvi.Tag as PwListItem);
+					ListViewItem lvi = null;
+					PwListItem li = null;
+					try
+					{
+						//This can throw if multiple concurrent changes are in progress
+						//Can happen when e. g. doing Edit Entries (quick) - Expire npw
+						lvi = lv.Items[i];
+						li = (lvi.Tag as PwListItem);
+					}
+					catch { }
 					if (li == null) continue;
 
 					if (li.Entry == null)
@@ -305,7 +313,13 @@ namespace KPColorChange
 						{
 							if (!li.Entry.IsContainedIn(recycle))
 							{
-								lv.Items.RemoveAt(i);
+								try
+								{
+									//This can throw if multiple concurrent changes are in progress
+									//Can happen when e. g. doing Edit Entries (quick) - Expire npw
+									lv.Items.Remove(lvi);
+								}
+								catch {	}
 								hidden++;
 								PluginDebug.AddInfo("Hidden entry: " + li.Entry.Uuid.ToHexString(), 0, "Removed from list");
 							}
@@ -336,7 +350,6 @@ namespace KPColorChange
 					UIUtil.SetAlternatingBgColors(lv, UIUtil.GetAlternateColor(lv.BackColor), Program.Config.MainWindow.EntryListAlternatingBgColors);
 					m_host.MainWindow.SetStatusEx(string.Format(PluginTranslate.HiddenExpired, hidden));
 				}
-				lv.EndUpdate();
 			}
 			catch (Exception ex)
 			{
@@ -344,6 +357,10 @@ namespace KPColorChange
 				PluginDebug.DebugMode = true;
 				PluginDebug.AddError("Exception during OnUIStateUpdate", -1, ex.Message, ex.Source, ex.StackTrace);
 				PluginDebug.DebugMode = bDM;
+			}
+			finally
+			{
+				if (lv != null) lv.EndUpdate();
 			}
 		}
 
