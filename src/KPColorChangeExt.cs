@@ -494,7 +494,7 @@ namespace KPColorChange
 		}
 		#endregion
 
-		private void ShowExpiringEntriesSingleDB()
+		private void ShowExpiringEntriesSingleDB(object sender, EventArgs e)
 		{
 			if ((m_host.Database == null) || !m_host.Database.IsOpen) return;
 			DateTime dtSoon = DateTime.Now.AddDays(Program.Config.Application.ExpirySoonDays);
@@ -642,7 +642,7 @@ namespace KPColorChange
 
 			m_MenuExpiringSingleDB = new ToolStripMenuItem(PluginTranslate.MenuShowSoonExpiringSingleDB);
 			m_MenuExpiringSingleDB.Name = "m_menuEditShowExpKPCC_SingleDB";
-			m_MenuExpiringSingleDB.Click += (o, e) => ShowExpiringEntriesSingleDB();
+			m_MenuExpiringSingleDB.Click += ShowExpiringEntriesSingleDB;
 			m_MenuExpiring.DropDownItems.Add(m_MenuExpiringSingleDB);
 
 			m_MenuExpiringMultiDB = new ToolStripMenuItem(PluginTranslate.MenuShowSoonExpiringMultiDB);
@@ -656,9 +656,26 @@ namespace KPColorChange
 
 		private void OnDropDownOpening(object sender, EventArgs e)
 		{
-			m_MenuExpiringSingleDB.Enabled = (m_host.Database != null) && m_host.Database.IsOpen;
-			m_MenuExpiringMultiDB.Enabled = m_host.MainWindow.DocumentManager.GetOpenDatabases().Count > 0;
-			m_MenuExpiring.Enabled = m_MenuExpiringSingleDB.Enabled | m_MenuExpiringMultiDB.Enabled;
+			bool bActiveOpen = (m_host.Database != null) && m_host.Database.IsOpen;
+			bool bMultipleOpen = m_host.MainWindow.DocumentManager.GetOpenDatabases().Count > 1;
+
+			m_MenuExpiring.Enabled = bActiveOpen || bActiveOpen;
+			if (!m_MenuExpiring.Enabled) return;
+
+			m_MenuExpiring.Click -= ShowExpiringEntriesSingleDB;
+			while (m_MenuExpiring.DropDownItems.Count > 0) m_MenuExpiring.DropDownItems.RemoveAt(0);
+
+			if (m_host.MainWindow.DocumentManager.GetOpenDatabases().Count == 1)
+			{
+				m_MenuExpiring.Click += ShowExpiringEntriesSingleDB;
+				return;
+			}
+
+			m_MenuExpiring.DropDownItems.Add(m_MenuExpiringSingleDB);
+			m_MenuExpiring.DropDownItems.Add(m_MenuExpiringMultiDB);
+
+			m_MenuExpiringSingleDB.Enabled = bActiveOpen;
+			m_MenuExpiringMultiDB.Enabled = bMultipleOpen;
 		}
 
 		public override void Terminate()
