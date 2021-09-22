@@ -570,8 +570,8 @@ namespace KPColorChange
 					}
 
 					ListViewItem lvi = new ListViewItem(UrlUtil.GetFileName(dbe.db.IOConnectionInfo.Path));
-					lvi.SubItems.Add(pe.Strings.ReadSafe(PwDefs.UserNameField));
 					lvi.SubItems.Add(pe.Strings.ReadSafe(PwDefs.TitleField));
+					lvi.SubItems.Add(pe.Strings.ReadSafe(PwDefs.UserNameField));
 					lvi.SubItems.Add(pe.ExpiryTime.ToLocalTime().ToString());
 					lvi.ImageIndex = (int)pe.IconId;
 					if (!pe.CustomIconUuid.Equals(PwUuid.Zero))
