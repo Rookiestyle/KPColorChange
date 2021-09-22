@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Translation>
-  <TranslationVersion>0</TranslationVersion>
+  <!-- 
+    Increment the TranslationVersion every time the translation file is updated
+	Also update the version.info file
+  -->
+  <TranslationVersion>1</TranslationVersion>
   <item>
     <key>NoEntries</key>
     <value>Nenhuma entrada expirará em breve existe</value>
