@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Translation>
+  <TranslationVersion>0</TranslationVersion>
+  <item>
+    <key>NoEntries</key>
+    <value>Nenhuma entrada expirará em breve existe</value>
+  </item>
+  <item>
+    <key>MenuShowSoonExpiringSingleDB</key>
+    <value>Banco de dados ativo</value>
+  </item>
+  <item>
+    <key>MenuShowSoonExpiringMultiDB</key>
+    <value>Todos os bancos de dados abertos...</value>
+  </item>
+  <item>
+    <key>SoonExpiring</key>
+    <value>Entradas expirando em breve</value>
+  </item>
+  <item>
+    <key>SoonExpiringWarning</key>
+    <value>Alerta (dias):</value>
+  </item>
+  <item>
+    <key>UseDateOnly</key>
+    <value>Compare apenas data (ignore a fração de tempo)</value>
+  </item>
+  <item>
+    <key>HideExpired</key>
+    <value>Ocultar entradas vencidas, alternar com:</value>
+  </item>
+  <item>
+    <key>HideExpiredToolBar</key>
+    <value>Ocultar entradas vencidas</value>
+  </item>  <item>
+    <key>HiddenExpired</key>
+    <value>Entradas vencidas ocultas: {0}</value>
+  </item>
+</Translation>
