@@ -33,14 +33,41 @@ namespace PluginTranslation
 		private static string LanguageIso6391 = string.Empty;
 		#region Definitions of translated texts go here
 		public const string PluginName = "KPColorChange";
+		/// <summary>
+		/// No soon expiring entries exist
+		/// </summary>
 		public static readonly string NoEntries = @"No soon expiring entries exist";
+		/// <summary>
+		/// Active database
+		/// </summary>
 		public static readonly string MenuShowSoonExpiringSingleDB = @"Active database";
+		/// <summary>
+		/// All open databases...
+		/// </summary>
 		public static readonly string MenuShowSoonExpiringMultiDB = @"All open databases...";
+		/// <summary>
+		/// Soon expiring entries
+		/// </summary>
 		public static readonly string SoonExpiring = @"Soon expiring entries";
+		/// <summary>
+		/// Warning (days):
+		/// </summary>
 		public static readonly string SoonExpiringWarning = @"Warning (days):";
+		/// <summary>
+		/// Compare date only (ignore time fraction)
+		/// </summary>
 		public static readonly string UseDateOnly = @"Compare date only (ignore time fraction)";
+		/// <summary>
+		/// Hide expired entries, toggle with: 
+		/// </summary>
 		public static readonly string HideExpired = @"Hide expired entries, toggle with: ";
+		/// <summary>
+		/// Hide expired entries
+		/// </summary>
 		public static readonly string HideExpiredToolBar = @"Hide expired entries";
+		/// <summary>
+		/// Hidden expired entries: {0}
+		/// </summary>
 		public static readonly string HiddenExpired = @"Hidden expired entries: {0}";
 		#endregion
 
