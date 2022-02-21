@@ -202,6 +202,7 @@ namespace KPColorChange
 
 		private void OptionsFormClosed(object sender, Tools.OptionsFormsEventArgs e)
 		{
+			Config.ProgressiveHidingAllowed = Config.HidingStatus.Unknown;
 			if (e.form.DialogResult != DialogResult.OK) return;
 			bool shown = false;
 			Options options = (Options)Tools.GetPluginFromOptions(this, out shown);

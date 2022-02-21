@@ -7,11 +7,13 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle ("KPColorChange")]
-[assembly: AssemblyDescription ("Color entries that are expired or will expire soon")]
+[assembly: AssemblyDescription (@"Color entries that are expired or will expire soon
+
+Optional: Hide expired entries")]
 [assembly: AssemblyConfiguration ("")]
 [assembly: AssemblyCompany ("rookiestyle")]
 [assembly: AssemblyProduct ("KeePass Plugin")]
-[assembly: AssemblyCopyright("Copyright 2021")]
+[assembly: AssemblyCopyright("Copyright 2021 - 2022")]
 [assembly: AssemblyTrademark ("")]
 [assembly: AssemblyCulture ("")]
 // Setting ComVisible to false makes the types in this assembly not visible 
@@ -30,5 +32,5 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("2.3.1")]
-[assembly: AssemblyFileVersion("2.3.1")]
+[assembly: AssemblyVersion("2.3.2")]
+[assembly: AssemblyFileVersion("2.3.2")]
